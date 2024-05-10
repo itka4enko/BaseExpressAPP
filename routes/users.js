@@ -5,7 +5,7 @@ const authenticateToken = require('../middleware/auth');
 
 /* GET users listing. */
 router.post('/register', userController.createUser)
-router.get('/activate/:token', authenticateToken, userController.activateAccount);
+router.get('/activate/:token', userController.activateAccount);
 
 router.post('/token', userController.token)
 router.post('/token/refresh', userController.refreshToken)

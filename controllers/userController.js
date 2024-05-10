@@ -21,7 +21,7 @@ exports.createUser = [
 
       res.status(201).json({ message: `Користувача створено успішно. Активаційний лист надіслано на імейл ${anonymizedEmail}` });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error });
     }
   }
 ];
