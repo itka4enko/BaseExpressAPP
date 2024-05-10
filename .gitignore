@@ -1,0 +1,36 @@
+# Django specific
+*.log
+*.pot
+*.pyc
+__pycache__/
+*.mo
+*.sqlite3
+db.sqlite3
+
+# Virtual environment
+.venv/
+venv/
+
+# User-uploaded files
+media/
+
+# Static files (if not managed by Django in production)
+static/
+
+# Sensitive information
+.env
+settings.py
+
+# IDE and editor configuration
+.idea/
+.vscode/
+
+# Operating system files
+*.DS_Store
+Thumbs.db
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
+*.swo
