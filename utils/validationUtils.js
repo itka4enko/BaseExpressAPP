@@ -20,25 +20,17 @@ const passwordValidation = [
     .withMessage('Пароль повинен містити хоча б одну велику літеру')
     .matches(/[\W_]/)
     .withMessage('Пароль повинен містити хоча б один спеціальний символ'),
+];
+
+const confirmPasswordValidation = [
   body('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Паролі не співпадають')
 ];
 
-const validateAuthentication = [
-  // Валідація електронної пошти та пароля
-  check('email').notEmpty().withMessage('Імейл обов\'язковий для аутентифікації'),
-  check('password').notEmpty().withMessage('Пароль обов\'язковий для аутентифікації'),
-];
-
-const validateRefreshToken = [
-  // Перевірка наявності refresh токена
-  check('refreshToken').notEmpty().withMessage('Refresh token обов\'язковий для оновлення'),
-];
 
 module.exports = {
   emailValidation,
   passwordValidation,
-  validateAuthentication,
-  validateRefreshToken
+  confirmPasswordValidation
 };

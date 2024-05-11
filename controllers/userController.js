@@ -8,6 +8,7 @@ const cryptoUtils = require('../utils/cryptoUtils');
 exports.createUser = [
   utils.emailValidation,
   utils.passwordValidation,
+  utils.confirmPasswordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -53,14 +54,23 @@ exports.activateAccount = async (req, res) => {
   }
 };
 
-exports.passwordReset = async (req, res) => {
-  try {
-    await sendPasswordResetEmail(req.params.email);
-    res.status(200).json({ message: `Посилання для відновлення пароля відправлено.` });
-  } catch (error) {
-    res.status(500).json(error);
+exports.passwordReset = [
+  utils.emailValidation, 
+
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      await sendPasswordResetEmail(req.body.email);
+      res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${req.body.email}.` });
+    } catch (error) {
+      res.status(500).json({ message: 'Помилка при відправленні електронного листа.', error: error });
+    }
   }
-};
+];
 
 exports.resetPassword = [
   utils.passwordValidation,
@@ -90,7 +100,8 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.token = [
-  utils.validateAuthentication,
+  utils.emailValidation,
+  utils.passwordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -108,8 +119,6 @@ exports.token = [
 ];
 
 exports.refreshToken = [
-  utils.validateRefreshToken,
-
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

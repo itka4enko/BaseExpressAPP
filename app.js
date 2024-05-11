@@ -4,6 +4,10 @@ let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
 let mongoose = require('mongoose');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const https = require('https');
+const fs = require('fs');
 
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
@@ -11,6 +15,13 @@ let usersRouter = require('./routes/users');
 require('dotenv').config();
 
 let app = express();
+
+app.disable('x-powered-by');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 хвилин
+  max: 100 // обмеження кожного IP до 100 запитів за вікно часу
+});
 
 // Підключення до бази даних
 db_url = `mongodb://${process.env.DB_HOST}:${process.env.DB_PASS}`
@@ -30,6 +41,8 @@ db.once('open', function() {
 app.set('views', path.join(__dirname, 'views'));
 
 //middleware
+app.use(helmet());
+app.use(limiter);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -46,11 +59,14 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  if (err.code === 'ERR_RATE_LIMIT') {
+    err.status = 429;
+  }
 
-  res.status(err.status || 500);
-  res.render('error');
+  res.status(err.status || 500).json({
+    message: err.message,
+    error: req.app.get('env') === 'development' ? err : {}
+  });
 });
 
 const port = process.env.PORT || 3000;
