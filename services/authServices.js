@@ -1,5 +1,4 @@
 const User = require('../models/user'); 
-const cryptoUtils = require('../utils/cryptoUtils');
 const jwt = require('jsonwebtoken');
 const { sendActivationEmail } = require('../services/mailServices');
 
@@ -38,7 +37,7 @@ exports.authenticateUser = async ({ email, password }) => {
     throw new Error('Користувача з таким email не знайдено.');
   }
 
-  const isMatch = await cryptoUtils.comparePassword(password, user.password);
+  const isMatch = await user.comparePassword(password);
   if (!isMatch) {
     throw new Error('Неправильний пароль.');
   }
@@ -50,15 +49,16 @@ exports.authenticateUser = async ({ email, password }) => {
     throw error;
   }
 
-  const accessToken = cryptoUtils.generateAccessToken({ id: user.id }, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE });
-  const refreshToken = cryptoUtils.generateRefreshToken({ id: user.id }, { expiresIn: process.env.REFRESH_TOKEN_EXPIRE });
+  const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE });
+  const refreshToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET_REFRESH, { expiresIn: process.env.REFRESH_TOKEN_EXPIRE });
+
   return { accessToken, refreshToken };
 };
 
 exports.refreshAccessToken = async (refreshToken) => {
   try {
     const user = jwt.verify(refreshToken, process.env.JWT_SECRET_REFRESH);
-    const accessToken = cryptoUtils.generateAccessToken({ id: user.id }, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE });
+    const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE });
     return accessToken;
   } catch (error) {
     throw new Error(error);

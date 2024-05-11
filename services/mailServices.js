@@ -1,6 +1,6 @@
 const sendEmail = require('../mailer');
-const cryptoUtils = require('../utils/cryptoUtils');
 const User = require('../models/user');
+const jwt = require('jsonwebtoken');
 
 require('dotenv').config();
 
@@ -12,7 +12,8 @@ exports.sendActivationEmail = async (userId) => {
       throw new Error('Користувача не знайдено.');
     }
 
-    const activationToken = cryptoUtils.generateActivationToken(user);
+    const activationToken = jwt.sign({id: user._id, }, process.env.JWT_ACTIVATION, { expiresIn: process.env.ACTIVATION_TOKEN_EXPIRE }); 
+
     const activationUrl = `http://${process.env.FRONTEND_URL}/users/activate/${activationToken}`;
 
     await sendEmail({
@@ -32,8 +33,8 @@ exports.sendPasswordResetEmail = async (email) => {
     if (!user) {
       throw new Error('Користувача не знайдено.');
     }
-
-    const resetToken = cryptoUtils.generateResetToken(user);
+  
+    const resetToken = jwt.sign({id: user._id, }, process.env.JWT_PASSWORD_RESET, { expiresIn: process.env.RESET_TOKEN_EXPIRE });
     const resetUrl = `http://${process.env.FRONTEND_URL}/users/reset-password/${resetToken}`;
 
     await sendEmail({

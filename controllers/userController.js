@@ -2,13 +2,13 @@ const { createUser, deleteUser, authenticateUser, refreshAccessToken, activateUs
 const { getUserInfo } = require('../services/userServices');
 const { sendActivationEmail, sendPasswordResetEmail } = require('../services/mailServices');
 const { validationResult } = require('express-validator');
-const utils = require('../utils/validationUtils');
-const cryptoUtils = require('../utils/cryptoUtils');
+const validationUtilsutils = require('../utils/validationUtils');
+const utils = require('../utils/utils');
 
 exports.createUser = [
-  utils.emailValidation,
-  utils.passwordValidation,
-  utils.confirmPasswordValidation,
+  validationUtilsutils.emailValidation,
+  validationUtilsutils.passwordValidation,
+  validationUtilsutils.confirmPasswordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -17,11 +17,11 @@ exports.createUser = [
     }
 
     try {
-      credentials = { email: req.body.email, password: req.body.password }
+      const credentials = { email: req.body.email, password: req.body.password }
       const user = await createUser(credentials);
       await sendActivationEmail(user._id);
 
-      const anonymizedEmail = cryptoUtils.anonymizedEmail(user.email)
+      const anonymizedEmail = utils.anonymizedEmail(user.email)
 
       res.status(201).json({ message: `Користувача створено успішно. Активаційний лист надіслано на імейл ${anonymizedEmail}` });
     } catch (error) {
@@ -55,7 +55,7 @@ exports.activateAccount = async (req, res) => {
 };
 
 exports.passwordReset = [
-  utils.emailValidation, 
+  validationUtilsutils.emailValidation, 
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -64,8 +64,11 @@ exports.passwordReset = [
     }
 
     try {
-      await sendPasswordResetEmail(req.body.email);
-      res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${req.body.email}.` });
+      userEmail = req.params.email
+      await sendPasswordResetEmail(userEmail);
+      const anonymizedEmail = utils.anonymizedEmail(userEmail)
+      
+      res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${anonymizedEmail}.` });
     } catch (error) {
       res.status(500).json({ message: 'Помилка при відправленні електронного листа.', error: error });
     }
@@ -73,7 +76,8 @@ exports.passwordReset = [
 ];
 
 exports.resetPassword = [
-  utils.passwordValidation,
+  validationUtilsutils.passwordValidation,
+  validationUtilsutils.confirmPasswordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -100,8 +104,8 @@ exports.deleteUser = async (req, res) => {
 };
 
 exports.token = [
-  utils.emailValidation,
-  utils.passwordValidation,
+  validationUtilsutils.emailValidation,
+  validationUtilsutils.passwordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
