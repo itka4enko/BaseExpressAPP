@@ -1,10 +1,13 @@
-const { createUser, deleteUser, authenticateUser, refreshAccessToken, sendActivationEmail, activateUser } = require('../services/authServices');
+const { createUser, deleteUser, authenticateUser, refreshAccessToken, activateUser, resetUserPassword } = require('../services/authServices');
+const { getUserInfo } = require('../services/userServices');
+const { sendActivationEmail, sendPasswordResetEmail } = require('../services/mailServices');
 const { validationResult } = require('express-validator');
 const utils = require('../utils/validationUtils');
 const cryptoUtils = require('../utils/cryptoUtils');
 
 exports.createUser = [
-  utils.validateUserCreation,
+  utils.emailValidation,
+  utils.passwordValidation,
 
   async (req, res) => {
     const errors = validationResult(req);
@@ -15,7 +18,7 @@ exports.createUser = [
     try {
       credentials = { email: req.body.email, password: req.body.password }
       const user = await createUser(credentials);
-      await sendActivationEmail(user);
+      await sendActivationEmail(user._id);
 
       const anonymizedEmail = cryptoUtils.anonymizedEmail(user.email)
 
@@ -26,20 +29,56 @@ exports.createUser = [
   }
 ];
 
+exports.userInfo = async (req, res) => {
+  try {
+    const userId = req.userId; 
+    const userInfo = await getUserInfo(userId);
+    res.json(userInfo);
+  } catch (error) {
+    res.status(500).json({ message: 'Помилка при отриманні інформації про користувача.' });
+  }
+};
+
 exports.activateAccount = async (req, res) => {
   try {
     const user = await activateUser(req.params.token);
-    const tokens = await authenticateUser({ email: user.email, password: user.password });
 
-    res.json({ 
-      message: 'Акаунт активовано успішно.',
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken
-    });
+    if (!user) {
+      return res.status(404).json({ message: 'Користувача не знайдено або неправильний токен активації.' });
+    }
+
+    res.json({ message: 'Акаунт активовано успішно. Тепер ви можете увійти в систему.' });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
+
+exports.passwordReset = async (req, res) => {
+  try {
+    await sendPasswordResetEmail(req.params.email);
+    res.status(200).json({ message: `Посилання для відновлення пароля відправлено.` });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+};
+
+exports.resetPassword = [
+  utils.passwordValidation,
+
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      await resetUserPassword(req.params.token, req.body.password);
+      res.status(200).json({ message: `Пароль успішно змінено.` });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+];
 
 exports.deleteUser = async (req, res) => {
   try {

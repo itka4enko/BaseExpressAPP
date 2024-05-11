@@ -17,8 +17,20 @@ const comparePassword = async (candidatePassword, userPassword) => {
     }
 };
 
-const generateActivationToken = () => {
-    return crypto.randomBytes(20).toString('hex');
+const generateActivationToken = (user) => {
+    const payload = {
+      id: user._id, 
+    };
+  
+    return jwt.sign(payload, process.env.JWT_ACTIVATION, { expiresIn: process.env.ACTIVATION_TOKEN_EXPIRE }); 
+};
+
+const generateResetToken = (user) => {
+    const payload = {
+      id: user._id, 
+    };
+  
+    return jwt.sign(payload, process.env.JWT_PASSWORD_RESET, { expiresIn: process.env.RESET_TOKEN_EXPIRE }); 
 };
 
 const anonymizedEmail = (email) => {
@@ -30,6 +42,8 @@ module.exports = {
     generateRefreshToken,
     comparePassword,
     generateActivationToken, 
-    anonymizedEmail
+    anonymizedEmail,
+    generateActivationToken,
+    generateResetToken
 };
   

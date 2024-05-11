@@ -14,10 +14,6 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: false 
-  },
-  activationToken: {
-    type: String,
-    default: '' 
   }
 });
 
