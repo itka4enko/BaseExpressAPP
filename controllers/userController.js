@@ -10,7 +10,7 @@ exports.createUser = [
   validationUtilsutils.passwordValidation,
   validationUtilsutils.confirmPasswordValidation,
 
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -25,28 +25,22 @@ exports.createUser = [
 
       res.status(201).json({ message: `Користувача створено успішно. Активаційний лист надіслано на імейл ${anonymizedEmail}` });
     } catch (error) {
-      if(!error.status){
-        error.status = 500
-      }
-      res.status(error.status).json({ message: error.message });
+      next(error)
     }
   }
 ];
 
-exports.userInfo = async (req, res) => {
+exports.userInfo = async (req, res, next) => {
   try {
     const userId = req.userId; 
     const userInfo = await getUserInfo(userId);
     res.json(userInfo);
   } catch (error) {
-    if(!error.status){
-      error.status = 500
-    }
-    res.status(error.status).json({ message: error.message });
+    next(error)
   }
 };
 
-exports.activateAccount = async (req, res) => {
+exports.activateAccount = async (req, res, next) => {
   try {
     const user = await activateUser(req.params.token);
 
@@ -56,17 +50,14 @@ exports.activateAccount = async (req, res) => {
 
     res.json({ message: 'Акаунт активовано успішно. Тепер ви можете увійти в систему.' });
   } catch (error) {
-    if(!error.status){
-      error.status = 500
-    }
-    res.status(error.status).json({ message: error.message });
+    next(error)
   }
 };
 
 exports.passwordReset = [
   validationUtilsutils.emailValidation, 
 
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -79,10 +70,7 @@ exports.passwordReset = [
       
       res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${anonymizedEmail}.` });
     } catch (error) {
-      if(!error.status){
-        error.status = 500
-      }
-      res.status(error.status).json({ message: error.message });
+      next(error)
     }
   }
 ];
@@ -91,7 +79,7 @@ exports.resetPassword = [
   validationUtilsutils.passwordValidation,
   validationUtilsutils.confirmPasswordValidation,
 
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -101,10 +89,7 @@ exports.resetPassword = [
       await resetUserPassword(req.params.token, req.body.password);
       res.status(200).json({ message: `Пароль успішно змінено.` });
     } catch (error) {
-      if(!error.status){
-        error.status = 500
-      }
-      res.status(error.status).json({ message: error.message });
+      next(error)
     }
   }
 ];

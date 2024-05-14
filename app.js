@@ -62,10 +62,9 @@ app.use(function(err, req, res, next) {
   if (err.code === 'ERR_RATE_LIMIT') {
     err.status = 429;
   }
-
+ 
   res.status(err.status || 500).json({
     message: err.message,
-    error: req.app.get('env') === 'development' ? err : {}
   });
 });
 
