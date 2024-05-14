@@ -9,7 +9,10 @@ exports.sendActivationEmail = async (userId) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error('Користувача не знайдено.');
+      error = new Error();
+      error.status = 404
+      error.message = 'Користувача не знайдено.'
+      throw error
     }
 
     const activationToken = jwt.sign({id: user._id, }, process.env.JWT_ACTIVATION, { expiresIn: process.env.ACTIVATION_TOKEN_EXPIRE }); 
@@ -23,7 +26,10 @@ exports.sendActivationEmail = async (userId) => {
       html: ``
     });
   } catch (error) {
-    throw new Error('Не вдалося відправити активаційний лист.');
+    error = new Error();
+    error.status = 500
+    error.message = 'Не вдалося відправити лист для відновлення пароля.'
+    throw error
   }
 };
 
@@ -31,7 +37,10 @@ exports.sendPasswordResetEmail = async (email) => {
   try {
     const user = await User.findOne({ email: email });
     if (!user) {
-      throw new Error('Користувача не знайдено.');
+      error = new Error();
+      error.status = 404
+      error.message = 'Користувача не знайдено.'
+      throw error
     }
   
     const resetToken = jwt.sign({id: user._id, }, process.env.JWT_PASSWORD_RESET, { expiresIn: process.env.RESET_TOKEN_EXPIRE });
@@ -44,6 +53,9 @@ exports.sendPasswordResetEmail = async (email) => {
       html: ``
     });
   } catch (error) {
-    throw new Error('Не вдалося відправити лист для відновлення пароля.');
+    error = new Error();
+    error.status = 500
+    error.message = 'Не вдалося відправити лист для відновлення пароля.'
+    throw error
   }
 };

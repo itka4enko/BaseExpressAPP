@@ -13,7 +13,7 @@ exports.createUser = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     try {
@@ -25,7 +25,7 @@ exports.createUser = [
 
       res.status(201).json({ message: `Користувача створено успішно. Активаційний лист надіслано на імейл ${anonymizedEmail}` });
     } catch (error) {
-      res.status(500).json({ message: error });
+      res.status(error.status).json({ message: error.message });
     }
   }
 ];
@@ -36,7 +36,7 @@ exports.userInfo = async (req, res) => {
     const userInfo = await getUserInfo(userId);
     res.json(userInfo);
   } catch (error) {
-    res.status(500).json({ message: 'Помилка при отриманні інформації про користувача.' });
+    res.status(error.status).json({ message: error.message });
   }
 };
 
@@ -50,7 +50,7 @@ exports.activateAccount = async (req, res) => {
 
     res.json({ message: 'Акаунт активовано успішно. Тепер ви можете увійти в систему.' });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(error.status).json({ message: error.message });
   }
 };
 
@@ -60,7 +60,7 @@ exports.passwordReset = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     try {
@@ -70,7 +70,7 @@ exports.passwordReset = [
       
       res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${anonymizedEmail}.` });
     } catch (error) {
-      res.status(500).json({ message: 'Помилка при відправленні електронного листа.', error: error });
+      res.status(error.status).json({ message: error.message });
     }
   }
 ];
@@ -82,14 +82,14 @@ exports.resetPassword = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     try {
       await resetUserPassword(req.params.token, req.body.password);
       res.status(200).json({ message: `Пароль успішно змінено.` });
     } catch (error) {
-      res.status(500).json(error);
+      res.status(error.status).json({ message: error.message });
     }
   }
 ];
@@ -99,7 +99,7 @@ exports.deleteUser = async (req, res) => {
     const message = await deleteUser(req.userId);
     res.json(message);
   } catch (error) {
-    res.status(error.status).json({ message: error.message });
+    res.status(404).json({ message: error.message });
   }
 };
 
@@ -110,14 +110,14 @@ exports.token = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     try {
       const tokens = await authenticateUser(req.body);
       res.json(tokens);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      res.status(401).json({ message: error.message });
     }
   }
 ];
@@ -126,14 +126,14 @@ exports.refreshToken = [
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(422).json({ errors: errors.array() });
     }
 
     try {
       const accessToken = await refreshAccessToken(req.body.refreshToken);
       res.json({ accessToken });
     } catch (error) {
-      res.status(403).json({ message: error.message });
+      res.status(401).json({ message: error.message });
     }
   }
 ];

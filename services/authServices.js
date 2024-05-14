@@ -8,7 +8,10 @@ require('dotenv').config();
 exports.createUser = async ({ email, password }) => {
   const existingUser = await User.findOne({ email: email });
   if (existingUser) {
-    throw new Error('Користувач з таким email вже існує.');
+    const error = new Error();
+    error.message = "Користувач з таким email вже існує."
+    error.status = 409
+    throw error;
   }
 
   const user = new User({
@@ -44,8 +47,7 @@ exports.authenticateUser = async ({ email, password }) => {
 
   if (!user.active) {
     await sendActivationEmail(user._id);
-    const error = new Error('Акаунт не активовано. Активаційний лист повторно надіслано на вашу електронну адресу.');
-    error.status = 401; 
+    const error = new Error('Акаунт не активовано. Активаційний лист повторно надіслано на вашу електронну адресу.'); 
     throw error;
   }
 
@@ -70,7 +72,10 @@ exports.activateUser = async (activationToken) => {
     const payload = jwt.verify(activationToken, process.env.JWT_ACTIVATION);
     const user = await User.findOne({ _id: payload.id});
     if (!user) {
-      throw new Error('Неможливо знайти користувача з таким ID або токеном активації.');
+      error = new Error();
+      error.status = 404
+      error.message = 'Неможливо знайти користувача з таким ID або токеном активації.'
+      throw error
     }
 
     user.active = true;
@@ -78,10 +83,14 @@ exports.activateUser = async (activationToken) => {
     return user; 
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      throw new Error('Токен активації застарів.');
+      error.status = 401
+      error.message = 'Токен активації застарів.'
     } else {
-      throw new Error('Помилка при перевірці токена.');
+      error.status = 500
+      error.message = 'Помилка при перевірці токена.'
     }
+
+    throw error
   }
 };
 
@@ -92,7 +101,10 @@ exports.resetUserPassword = async (token, newPassword) => {
 
     const user = await User.findById(userId);
     if (!user) {
-      throw new Error('Користувача з таким ID не знайдено.');
+      error = new Error();
+      error.status = 404
+      error.message = 'Користувача з таким ID не знайдено.'
+      throw error
     }
 
     user.password = newPassword;
@@ -100,7 +112,10 @@ exports.resetUserPassword = async (token, newPassword) => {
 
     return user; 
   } catch (error) {
-    throw new Error('Помилка при скиданні пароля.');
+    error = new Error();
+    error.status = 500
+    error.message = 'Помилка при скиданні пароля.'
+    throw error
   }
 };
 
