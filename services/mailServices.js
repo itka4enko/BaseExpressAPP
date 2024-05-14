@@ -26,9 +26,9 @@ exports.sendActivationEmail = async (userId) => {
       html: ``
     });
   } catch (error) {
-    error = new Error();
-    error.status = 500
-    error.message = 'Не вдалося відправити лист для відновлення пароля.'
+    if (error.status != 404){
+      error.status = 400
+    }
     throw error
   }
 };
@@ -37,6 +37,7 @@ exports.sendPasswordResetEmail = async (email) => {
   try {
     const user = await User.findOne({ email: email });
     if (!user) {
+      console.log(user)
       error = new Error();
       error.status = 404
       error.message = 'Користувача не знайдено.'
@@ -53,9 +54,9 @@ exports.sendPasswordResetEmail = async (email) => {
       html: ``
     });
   } catch (error) {
-    error = new Error();
-    error.status = 500
-    error.message = 'Не вдалося відправити лист для відновлення пароля.'
+    if (error.status != 404){
+      error.status = 400
+    }
     throw error
   }
 };

@@ -85,8 +85,8 @@ exports.activateUser = async (activationToken) => {
     if (error.name === 'TokenExpiredError') {
       error.status = 401
       error.message = 'Токен активації застарів.'
-    } else {
-      error.status = 500
+    } else if(error.status != 404) {
+      error.status = 400
       error.message = 'Помилка при перевірці токена.'
     }
 
@@ -112,9 +112,9 @@ exports.resetUserPassword = async (token, newPassword) => {
 
     return user; 
   } catch (error) {
-    error = new Error();
-    error.status = 500
-    error.message = 'Помилка при скиданні пароля.'
+    if (error.status != 404){
+      error.status = 400
+    }
     throw error
   }
 };

@@ -19,8 +19,10 @@ const passwordValidation = [
     .matches(/[A-Z]/)
     .withMessage('Пароль повинен містити хоча б одну велику літеру')
     .matches(/[\W_]/)
-    .withMessage('Пароль повинен містити хоча б один спеціальний символ'),
-];
+    .withMessage('Пароль повинен містити хоча б один спеціальний символ')
+    .matches(/^\S*$/)
+    .withMessage('Пароль не повинен містити пробіли')
+]
 
 const confirmPasswordValidation = [
   body('confirmPassword')

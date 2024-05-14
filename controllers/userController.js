@@ -25,6 +25,9 @@ exports.createUser = [
 
       res.status(201).json({ message: `Користувача створено успішно. Активаційний лист надіслано на імейл ${anonymizedEmail}` });
     } catch (error) {
+      if(!error.status){
+        error.status = 500
+      }
       res.status(error.status).json({ message: error.message });
     }
   }
@@ -36,6 +39,9 @@ exports.userInfo = async (req, res) => {
     const userInfo = await getUserInfo(userId);
     res.json(userInfo);
   } catch (error) {
+    if(!error.status){
+      error.status = 500
+    }
     res.status(error.status).json({ message: error.message });
   }
 };
@@ -50,6 +56,9 @@ exports.activateAccount = async (req, res) => {
 
     res.json({ message: 'Акаунт активовано успішно. Тепер ви можете увійти в систему.' });
   } catch (error) {
+    if(!error.status){
+      error.status = 500
+    }
     res.status(error.status).json({ message: error.message });
   }
 };
@@ -70,6 +79,9 @@ exports.passwordReset = [
       
       res.status(200).json({ message: `Посилання для відновлення пароля відправлено на ${anonymizedEmail}.` });
     } catch (error) {
+      if(!error.status){
+        error.status = 500
+      }
       res.status(error.status).json({ message: error.message });
     }
   }
@@ -89,6 +101,9 @@ exports.resetPassword = [
       await resetUserPassword(req.params.token, req.body.password);
       res.status(200).json({ message: `Пароль успішно змінено.` });
     } catch (error) {
+      if(!error.status){
+        error.status = 500
+      }
       res.status(error.status).json({ message: error.message });
     }
   }

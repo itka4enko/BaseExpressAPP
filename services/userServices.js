@@ -15,8 +15,9 @@ exports.getUserInfo = async (userId) => {
         active: user.active
     };
   } catch (error) {
-    error.status = 500
-    error.message = 'Помилка при отриманні інформації про користувача.'
+    if (error.status != 404){
+      error.status = 400
+    }
     throw error
   }
 };
