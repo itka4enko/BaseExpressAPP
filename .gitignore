@@ -1,36 +1,34 @@
-# Django specific
+# Залежності
+/node_modules
+/package-lock.json
+
+# Логи
 *.log
-*.pot
-*.pyc
-__pycache__/
-*.mo
-*.sqlite3
-db.sqlite3
+*.gz
 
-# Virtual environment
-.venv/
-venv/
+# Виробничі файли
+/dist
 
-# User-uploaded files
-media/
+# Coveralls
+.nyc_output
+/coverage
 
-# Static files (if not managed by Django in production)
-static/
+# Файли редактора
+/.vscode
+/.idea
+*.sublime-project
+*.sublime-workspace
 
-# Sensitive information
-.env
-settings.py
-
-# IDE and editor configuration
-.idea/
-.vscode/
-
-# Operating system files
-*.DS_Store
+# Операційні системи
+.DS_Store
 Thumbs.db
 
-# Temporary and backup files
-*.tmp
-*.bak
-*.swp
-*.swo
+# Бенчмаркінг
+/benchmarks/graphs
+
+# Змінні середовища
+.env
+
+# Конфігураційні файли
+/bin
+/config
