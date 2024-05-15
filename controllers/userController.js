@@ -94,12 +94,12 @@ exports.resetPassword = [
   }
 ];
 
-exports.deleteUser = async (req, res) => {
+exports.deleteUser = async (req, res, next) => {
   try {
     const message = await deleteUser(req.userId);
     res.json(message);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    next(error);
   }
 };
 
@@ -107,7 +107,7 @@ exports.token = [
   validationUtilsutils.emailValidation,
   validationUtilsutils.passwordValidation,
 
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -117,13 +117,13 @@ exports.token = [
       const tokens = await authenticateUser(req.body);
       res.json(tokens);
     } catch (error) {
-      res.status(401).json({ message: error.message });
+      next(error)
     }
   }
 ];
 
 exports.refreshToken = [
-  async (req, res) => {
+  async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
@@ -133,7 +133,7 @@ exports.refreshToken = [
       const accessToken = await refreshAccessToken(req.body.refreshToken);
       res.json({ accessToken });
     } catch (error) {
-      res.status(401).json({ message: error.message });
+      next(error)
     }
   }
 ];

@@ -24,30 +24,41 @@ exports.createUser = async ({ email, password }) => {
 };
 
 exports.deleteUser = async (userId) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new Error('Користувача не знайдено.');
-  }
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      const error = new Error('Користувача не знайдено.');
+      error.status = 404;
+      throw error;
+    }
 
-  await User.findByIdAndDelete(userId);
-  return { message: 'Користувача успішно видалено.' };
+    await User.findByIdAndDelete(userId);
+    return { message: 'Користувача успішно видалено.' };
+  } catch (error) {
+    throw error
+  }
 };
 
 exports.authenticateUser = async ({ email, password }) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new Error('Користувача з таким email не знайдено.');
+    const error = new Error('Користувача з таким email не знайдено.');
+    error.status = 404;
+    throw error;
   }
 
   const isMatch = await user.comparePassword(password);
   if (!isMatch) {
-    throw new Error('Неправильний пароль.');
+    const error = new Error('Неправильний пароль.');
+    error.status = 401;
+    throw error;
   }
 
   if (!user.active) {
     await sendActivationEmail(user._id);
     const error = new Error('Акаунт не активовано. Активаційний лист повторно надіслано на вашу електронну адресу.'); 
+    error.status = 403;
     throw error;
   }
 
@@ -63,7 +74,10 @@ exports.refreshAccessToken = async (refreshToken) => {
     const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRE });
     return accessToken;
   } catch (error) {
-    throw new Error(error);
+    error = new Error();
+    error.status = 401
+    error.message = 'Невірний токен аутентифікації'
+    throw error
   }
 };
 
